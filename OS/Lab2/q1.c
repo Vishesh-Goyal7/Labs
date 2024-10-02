@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <stdlib.h>
 
 int main() {
     pid_t pid;
@@ -19,8 +17,6 @@ int main() {
         printf("Parent Process:\n");
         printf("PID: %d\n", getpid());
         printf("PPID: %d\n", getppid());
-
-        wait(NULL);
     }
 
     return 0;
