@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+#define MAX_STRINGS 100
+#define MAX_LENGTH 100
+
+void bubble_sort(char arr[][MAX_LENGTH], int n);
+void selection_sort(char arr[][MAX_LENGTH], int n);
+void swap(char *a, char *b); 
+
+int main() {
+    int n;
+    char strings[MAX_STRINGS][MAX_LENGTH];
+
+    printf("Enter number of strings: ");
+    scanf("%d", &n);
+    getchar(); 
+
+    printf("Enter the strings:\n");
+    for (int i = 0; i < n; i++) {
+        fgets(strings[i], MAX_LENGTH, stdin);
+        strings[i][strcspn(strings[i], "\n")] = 0; 
+    }
+
+    if (fork() == 0) { 
+        bubble_sort(strings, n);
+        printf("Bubble Sorted Strings:\n");
+        for (int i = 0; i < n; i++) printf("%s\n", strings[i]);
+        exit(0);
+    }
+
+    if (fork() == 0) {
+        selection_sort(strings, n);
+        printf("Selection Sorted Strings:\n");
+        for (int i = 0; i < n; i++) printf("%s\n", strings[i]);
+        exit(0);
+    }
+
+    wait(NULL); 
+    wait(NULL); 
+
+    return 0;
+}
+
+void bubble_sort(char arr[][MAX_LENGTH], int n) {
+    for (int i = 0; i < n-1; i++)
+        for (int j = 0; j < n-i-1; j++)
+            if (strcmp(arr[j], arr[j+1]) > 0)
+                swap(arr[j], arr[j+1]);
+}
+
+void selection_sort(char arr[][MAX_LENGTH], int n) {
+    for (int i = 0; i < n-1; i++) {
+        int min_idx = i;
+        for (int j = i+1; j < n; j++)
+            if (strcmp(arr[j], arr[min_idx]) < 0) min_idx = j;
+        swap(arr[min_idx], arr[i]);
+    }
+}
+
+void swap(char *a, char *b) {
+    char temp[MAX_LENGTH];
+    strcpy(temp, a);
+    strcpy(a, b);
+    strcpy(b, temp);
+}
