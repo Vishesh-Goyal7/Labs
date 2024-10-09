@@ -1,72 +1,92 @@
 #include <stdio.h>
-#define MAX_PROCESSES 5
-#define MAX_RESOURCES 3
+#include <stdbool.h>
 
-int isSafe(int processes[], int avail[], int max[][MAX_RESOURCES], int alloc[][MAX_RESOURCES], int need[][MAX_RESOURCES]) {
-    int finish[MAX_PROCESSES] = {0};
-    int safeSequence[MAX_PROCESSES];
-    int work[MAX_RESOURCES];
+#define P 5 // Number of processes
+#define R 3 // Number of resource types
 
-    for (int i = 0; i < MAX_RESOURCES; i++)
-        work[i] = avail[i];
+int main() {
+    // Initializing the Allocation matrix
+    int allocation[P][R] = {{0, 1, 0}, 
+                            {2, 0, 0}, 
+                            {3, 0, 2}, 
+                            {2, 1, 1}, 
+                            {0, 0, 2}};
 
-    int count = 0;
-    while (count < MAX_PROCESSES) {
-        int found = 0;
-        for (int p = 0; p < MAX_PROCESSES; p++) {
-            if (finish[p] == 0) {
-                int j;
-                for (j = 0; j < MAX_RESOURCES; j++)
-                    if (need[p][j] > work[j])
-                        break;
+    // Initializing the Max matrix
+    int max[P][R] = {{7, 5, 3}, 
+                     {3, 2, 2}, 
+                     {9, 0, 2}, 
+                     {2, 2, 2}, 
+                     {4, 3, 3}};
 
-                if (j == MAX_RESOURCES) {
-                    for (int k = 0; k < MAX_RESOURCES; k++)
-                        work[k] += alloc[p][k];
+    // Initializing the Available resources array
+    int available[R] = {3, 3, 2};
 
-                    safeSequence[count++] = p;
-                    finish[p] = 1;
-                    found = 1;
-                }
-            }
-        }
-        if (found == 0) {
-            printf("System is not in a safe state\n");
-            return 0;
+    // Declaring the Need matrix
+    int need[P][R];
+
+    // Calculating the Need matrix (Need = Max - Allocation)
+    for (int i = 0; i < P; i++) {
+        for (int j = 0; j < R; j++) {
+            need[i][j] = max[i][j] - allocation[i][j];
         }
     }
 
-    printf("System is in a safe state.\nSafe sequence is: ");
-    for (int i = 0; i < MAX_PROCESSES; i++)
+    // Marking all processes as unfinished initially
+    bool finished[P] = {false};
+    int safeSequence[P]; // To store the safe sequence
+    int work[R];         // Work array to store temporary available resources
+
+    // Initializing work as available
+    for (int i = 0; i < R; i++) {
+        work[i] = available[i];
+    }
+
+    int count = 0; // Count of processes that have finished execution
+
+    while (count < P) {
+        bool foundProcess = false;
+
+        // Find a process that can finish with the current available resources
+        for (int i = 0; i < P; i++) {
+            if (!finished[i]) {
+                bool canFinish = true;
+
+                // Check if the process needs less or equal resources than available (work)
+                for (int j = 0; j < R; j++) {
+                    if (need[i][j] > work[j]) {
+                        canFinish = false;
+                        break;
+                    }
+                }
+
+                // If the process can finish
+                if (canFinish) {
+                    // Mark the process as finished
+                    for (int j = 0; j < R; j++) {
+                        work[j] += allocation[i][j]; // Free the resources
+                    }
+
+                    safeSequence[count++] = i; // Add this process to the safe sequence
+                    finished[i] = true;         // Mark the process as finished
+                    foundProcess = true;        // Set the flag indicating a process has been found
+                }
+            }
+        }
+
+        // If no such process is found, the system is in an unsafe state (deadlock).
+        if (!foundProcess) {
+            printf("The system is in an unsafe state.\n");
+            return -1;
+        }
+    }
+
+    // If the loop completes, the system is in a safe state, and we print the safe sequence
+    printf("The system is in a safe state.\nSafe sequence is: ");
+    for (int i = 0; i < P; i++) {
         printf("%d ", safeSequence[i]);
+    }
     printf("\n");
-    return 1;
-}
-
-int main() {
-    int processes[] = {0, 1, 2, 3, 4};
-    int avail[] = {3, 3, 2};
-    int max[MAX_PROCESSES][MAX_RESOURCES] = {
-        {7, 5, 3},
-        {3, 2, 2},
-        {9, 0, 2},
-        {2, 2, 2},
-        {4, 3, 3}
-    };
-    int alloc[MAX_PROCESSES][MAX_RESOURCES] = {
-        {0, 1, 0},
-        {2, 0, 0},
-        {3, 0, 2},
-        {2, 1, 1},
-        {0, 0, 2}
-    };
-    int need[MAX_PROCESSES][MAX_RESOURCES];
-
-    for (int i = 0; i < MAX_PROCESSES; i++)
-        for (int j = 0; j < MAX_RESOURCES; j++)
-            need[i][j] = max[i][j] - alloc[i][j];
-
-    isSafe(processes, avail, max, alloc, need);
 
     return 0;
 }
