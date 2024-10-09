@@ -27,13 +27,8 @@ int main(int argc, char *argv[]) {
     }
 
     int num_strings = argc - 1;
-    char **strings1 = malloc(num_strings * sizeof(char *));
-    char **strings2 = malloc(num_strings * sizeof(char *));
-
-    for (int i = 0; i < num_strings; i++) {
-        strings1[i] = strdup(argv[i + 1]);
-        strings2[i] = strdup(argv[i + 1]);
-    }
+    char **strings1 = argv+1;
+    char **strings2 = argv+1;
 
     pid_t pid1, pid2;
 
@@ -68,13 +63,6 @@ int main(int argc, char *argv[]) {
             printf("Parent: Child process with PID %d has completed.\n", completed_pid);
 
             wait(NULL);
-
-            for (int i = 0; i < num_strings; i++) {
-                free(strings1[i]);
-                free(strings2[i]);
-            }
-            free(strings1);
-            free(strings2);
         }
     }
 
