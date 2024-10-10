@@ -1,85 +1,77 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <stdbool.h>
 
-typedef struct {
-    int start;
-    int end;
-    int* primes;
-    int count;
-} PrimeData;
+pthread_mutex_t mutex;
+int prime_count = 0;
+int start, end;
 
-bool is_prime(int num) {
-    if (num <= 1) return false;
-    for (int i = 2; i * i <= num; i++) {
-        if (num % i == 0) return false;
+void* find_primes(void* arg) {
+    int thread_id = *((int*)arg);
+    int local_count = 0;
+
+    // Determine the subrange for this thread
+    int subrange_start = start + thread_id;
+    int subrange_end = end;
+    if (thread_id > 0) {
+        subrange_start += thread_id; // Adjust start to avoid overlapping with previous thread
     }
-    return true;
-}
 
-void* generate_primes(void* arg) {
-    PrimeData* data = (PrimeData*)arg;
-    int start = data->start;
-    int end = data->end;
-    
-    int index = 0;
-    for (int i = start; i <= end; i++) {
-        if (is_prime(i)) {
-            data->primes[index++] = i;
+    for (int num = subrange_start; num <= subrange_end; num += 2) {
+        int is_prime = 1;
+
+        // Check if num is a prime number
+        for (int i = 2; i * i <= num; i++) {
+            if (num % i == 0) {
+                is_prime = 0;
+                break;
+            }
+        }
+
+        if (is_prime && num > 1) {
+            local_count++;
+            pthread_mutex_lock(&mutex);
+            prime_count++;
+            printf("Prime found by thread %d: %d\n", thread_id, num);
+            pthread_mutex_unlock(&mutex);
         }
     }
-    data->count = index;  
-    pthread_exit(NULL);
+
+    pthread_exit((void*) local_count);
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        printf("Usage: %s <start> <end>\n", argv[0]);
-        return 1;
+int main() {
+    int num_threads;
+    printf("Enter the number of threads: ");
+    scanf("%d", &num_threads);
+
+    printf("Enter the starting point: ");
+    scanf("%d", &start);
+
+    printf("Enter the ending point: ");
+    scanf("%d", &end);
+
+    pthread_t threads[num_threads];
+    int thread_ids[num_threads];
+
+    pthread_mutex_init(&mutex, NULL);
+
+    // Create threads
+    for (int i = 0; i < num_threads; i++) {
+        thread_ids[i] = i;
+        pthread_create(&threads[i], NULL, find_primes, &thread_ids[i]);
     }
 
-    int start = atoi(argv[1]);
-    int end = atoi(argv[2]);
-
-    if (start > end || start < 0) {
-        printf("Invalid range. Please ensure start <= end and both are non-negative.\n");
-        return 1;
+    // Join threads and accumulate local counts
+    int total_primes = 0;
+    void* thread_ret;
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], &thread_ret);
+        total_primes += (int) thread_ret;
     }
 
-    int* primes = (int*)malloc((end - start + 1) * sizeof(int));
-    if (primes == NULL) {
-        printf("Memory allocation failed.\n");
-        return 1;
-    }
+    printf("\nTotal prime numbers found: %d\n", prime_count);
 
-    PrimeData data;
-    data.start = start;
-    data.end = end;
-    data.primes = primes;
-    data.count = 0;
-
-    pthread_t thread;
-    int ret = pthread_create(&thread, NULL, generate_primes, &data);
-    if (ret != 0) {
-        printf("Error creating thread.\n");
-        free(primes);
-        return 1;
-    }
-
-    pthread_join(thread, NULL);
-
-    printf("Prime numbers between %d and %d:\n", start, end);
-    for (int i = 0; i < data.count; i++) {
-        printf("%d ", data.primes[i]);
-    }
-    printf("\n");
-
-    free(primes);
-
+    pthread_mutex_destroy(&mutex);
     return 0;
 }
-
-// Commands to run on cli : 
-// gcc -pthread -o prime_generator prime_generator.c
-// ./prime_generator 10 50
