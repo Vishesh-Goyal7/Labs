@@ -23,8 +23,8 @@ void calculateTurnAroundTime(struct Process proc[], int n) {
 void sortProcessesByBurstTime(struct Process proc[], int n) {
     struct Process temp;
     for (int i = 0; i < n - 1; i++) {
-        for (int j = i + 1; j < n; j++) {
-            if (proc[i].burst_time > proc[j].burst_time) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (proc[j].burst_time > proc[j+1].burst_time) {
                 temp = proc[i];
                 proc[i] = proc[j];
                 proc[j] = temp;
