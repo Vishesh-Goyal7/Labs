@@ -1,0 +1,46 @@
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#define MAX_THREADS 10
+typedef struct {
+    int start;
+    int end;
+} Range;
+int isPrime(int num) {
+    if (num < 2) return 0;
+    for (int i = 2; i <= sqrt(num); i++) {
+        if (num % i == 0) return 0;
+    }
+    return 1;
+}
+void* findPrimes(void* param) {
+    Range* range = (Range*)param;
+    for (int i = range->start; i <= range->end; i++) {
+        if (isPrime(i)) {
+            printf("%d is prime\n", i);
+        }
+    }
+    return NULL;
+}
+int main() {
+    pthread_t threads[MAX_THREADS];
+    Range ranges[MAX_THREADS];
+    int start, end, num_threads;
+    printf("Enter the starting number: ");
+    scanf("%d", &start);
+    printf("Enter the ending number: ");
+    scanf("%d", &end);
+    num_threads = (end - start + 1) < MAX_THREADS ? (end - start + 1) : MAX_THREADS;
+    int range_size = (end - start + 1) / num_threads;
+    for (int i = 0; i < num_threads; i++) {
+        ranges[i].start = start + i * range_size;
+        ranges[i].end = (i == num_threads - 1) ? end : (start + (i + 1) * range_size - 1);
+        pthread_create(&threads[i], NULL, findPrimes, (void*)&ranges[i]);
+    }
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    printf("Prime number generation completed.\n");
+    return 0;
+}
