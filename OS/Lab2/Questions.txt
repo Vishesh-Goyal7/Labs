@@ -1,3 +1,0 @@
-Q1 : create a child process. display pid and ppid of both the parent and the child. 
-Q2 : Take set of strings as input from cli, sort them with a child process. First display output by child process, and when it terminates, display unsorted order by parent. 
-Q3 : Take set of strings as input from cli, sort them with 2 child processes following different ways. Parent should wait until one of them terminates. 
