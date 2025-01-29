@@ -16,12 +16,11 @@ void removePreprocessorDirectives(const char *inputFile, const char *outputFile)
         return;
     }
 
-    char line[1024];  // Buffer to store each line
+    char line[1024]; 
 
     while (fgets(line, sizeof(line), input) != NULL) {
-        // Check if the line starts with '#'
         if (line[0] != '#') {
-            fputs(line, output);  // Write non-preprocessor lines to output file
+            fputs(line, output);
         }
     }
 
