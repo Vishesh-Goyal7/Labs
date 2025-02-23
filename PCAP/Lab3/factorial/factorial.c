@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
             scanf("%d", &numbers[i]);
         }
     }
-    MPI_Scatter(rank == 0 ? numbers : NULL, 1, MPI_INT, &num, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatter(numbers, 1, MPI_INT, &num, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     fact = factorial(num);
 
