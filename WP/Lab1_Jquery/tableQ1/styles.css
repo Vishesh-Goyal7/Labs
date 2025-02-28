@@ -1,0 +1,35 @@
+body {
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+table {
+    width: 50%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    border: 2px solid black;
+}
+th, td {
+    border: 1px solid black;
+    padding: 10px;
+    text-align: center;
+}
+tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+tr:nth-child(even) {
+    background-color: #d6eaf8;
+}
+#container {
+    position: relative;
+    display: inline-block;
+}
+img {
+    width: 150px;
+    margin-top: 10px;
+}
+#moveBtn {
+    margin-top: 20px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+}

@@ -1,0 +1,23 @@
+body {
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+.calculator {
+    margin: 50px auto;
+    padding: 20px;
+    border: 2px solid black;
+    width: 300px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+input, select, button {
+    margin: 10px;
+    padding: 10px;
+    font-size: 18px;
+    width: 80%;
+}
+#result {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 15px;
+}
