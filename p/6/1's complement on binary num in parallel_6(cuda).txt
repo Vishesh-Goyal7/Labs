@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <cuda_runtime.h>
+
+#define N 5
+#define BITS 8  // Assuming 8-bit binary numbers
+
+__device__ int onesComplement(int num) {
+    int result = 0, placeValue = 1;
+
+    while (num > 0) {
+        int bit = num % 10;
+        result += (1 - bit) * placeValue;
+        num /= 10;
+        placeValue *= 10;
+    }
+    return result;
+}
+
+__global__ void onesComplementArray(int *A, int *B, int n) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < n) {
+        B[i] = onesComplement(A[i]);
+    }
+}
+
+int main() {
+    int A[N] = {1010, 1100, 1111, 1001, 1011};  // Binary numbers
+    int B[N];
+
+    int *d_A, *d_B;
+    cudaMalloc(&d_A, N * sizeof(int));
+    cudaMalloc(&d_B, N * sizeof(int));
+
+    cudaMemcpy(d_A, A, N * sizeof(int), cudaMemcpyHostToDevice);
+
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+
+    onesComplementArray<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, N);
+
+    cudaMemcpy(B, d_B, N * sizeof(int), cudaMemcpyDeviceToHost);
+
+    printf("One's Complement:\n");
+    for (int i = 0; i < N; i++) {
+        printf("%d -> %d\n", A[i], B[i]);
+    }
+
+    cudaFree(d_A);
+    cudaFree(d_B);
+    return 0;
+}

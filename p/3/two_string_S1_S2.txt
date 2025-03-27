@@ -1,0 +1,69 @@
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+int main(int argc, char *argv[]) {
+   int rank, size, length, n = 3;
+
+
+   MPI_Init(&argc, &argv);
+   MPI_Comm_size(MPI_COMM_WORLD, &size);
+   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+
+   char A[size * n], B[size * n], *strA, *strB, result[2 * n * size + 1];
+
+
+   if (rank == 0) {
+       printf("Enter string A: ");
+       scanf("%s", A);
+       printf("Enter string B: ");
+       scanf("%s", B);
+       length = strlen(A) / size;
+   }
+
+
+   // Broadcast length to all processes
+   MPI_Bcast(&length, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+
+   // Allocate memory safely
+   strA = (char *)calloc(length + 1, sizeof(char));
+   strB = (char *)calloc(length + 1, sizeof(char));
+
+
+   MPI_Scatter(A, length, MPI_CHAR, strA, length, MPI_CHAR, 0, MPI_COMM_WORLD);
+   MPI_Scatter(B, length, MPI_CHAR, strB, length, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+
+   strA[length] = '\0'; // Ensure null termination
+   strB[length] = '\0';
+
+
+   // Merging process
+   char sendStr[2 * length + 1]; // Allocate enough space
+   int i = 0, j = 0, k = 0;
+   while (i < length && j < length) {
+       sendStr[k++] = strA[i++];
+       sendStr[k++] = strB[j++];
+   }
+   sendStr[k] = '\0';
+
+
+   // Gather the results
+   MPI_Gather(sendStr, 2 * length, MPI_CHAR, result, 2 * length, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+
+   if (rank == 0) {
+       result[2 * n * size] = '\0'; // Properly null-terminate the result string
+       printf("The merged result is: %s\n", result);
+   }
+
+
+   free(strA);
+   free(strB);
+   MPI_Finalize();
+   return 0;
+}

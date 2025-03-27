@@ -1,0 +1,63 @@
+#include<stdio.h>
+#include<string.h>
+#include<cuda.h>
+
+
+__global__ void wordcount(const char *sentence, const char *word, int *count, int sentencelen, int wordlen)
+{
+    int id = threadIdx.x + blockIdx.x * blockDim.x;
+    int match = 1;
+
+
+    if(id + wordlen <= sentencelen)
+    {
+       
+        for(int i = 0; i < wordlen; i++)
+        {
+            if(sentence[id + i] != word[i])
+            {
+                match = 0;
+                break;
+            }
+        }
+    }
+    if(match && (id == 0 || sentence[id - 1] == ' ') && (sentence[id + wordlen] == ' ' || sentence[id + wordlen] == '\0'))
+        atomicAdd(count,1);
+}
+
+
+int main()
+{
+    const char sentence[256] = "Aditya is my name. Aditya is studying. Aditya is typing";
+    const char word[] = "Aditya";
+    int count = 0, sentencelen = strlen(sentence), wordlen = strlen(word);
+
+
+    char *d_sentence, *d_word;
+    int *d_count;
+
+
+    cudaMalloc((void**)&d_sentence,sentencelen*sizeof(char));
+    cudaMalloc((void**)&d_word, wordlen*sizeof(char));
+    cudaMalloc((void**)&d_count,sizeof(int));
+
+
+    cudaMemcpy(d_sentence,sentence,sentencelen*sizeof(char),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_word,word,wordlen*sizeof(char),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_count,&count,sizeof(int),cudaMemcpyHostToDevice);
+
+
+    wordcount<<<(sentencelen + 256 - 1) / 256, 256>>> (d_sentence,d_word,d_count,sentencelen,wordlen);
+    cudaMemcpy(&count,d_count,sizeof(int),cudaMemcpyDeviceToHost);
+
+
+    printf("The word '%s' appears %d times in the sentence.\n", word, count);
+
+
+    cudaFree(d_sentence);
+    cudaFree(d_word);
+    cudaFree(d_count);
+
+
+    return 0;
+}
