@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table and Image Animation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+      left: 0;
+      transition: left 2s ease-in-out;
+    }
+
+    .move-left {
+      left: -300px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 300px;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+      text-align: center;
+      padding: 10px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #d9eaf7;
+    }
+
+    img {
+      width: 150px;
+      height: auto;
+    }
+
+    .center-btn {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="moveContainer">
+    <img src="https://via.placeholder.com/150" alt="Sample Image" />
+    <table>
+      <tr><td>1</td><td>2</td><td>3</td></tr>
+      <tr><td>4</td><td>5</td><td>6</td></tr>
+      <tr><td>7</td><td>8</td><td>9</td></tr>
+    </table>
+  </div>
+
+  <div class="center-btn">
+    <button onclick="moveLeft()">Move Left</button>
+  </div>
+
+  <script>
+    function moveLeft() {
+      const container = document.getElementById('moveContainer');
+      container.classList.toggle('move-left');
+    }
+  </script>
+</body>
+</html>
